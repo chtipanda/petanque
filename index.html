@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boulodrome - Compteur de Pétanque</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c5e3b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Boulodrome">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+  :root {
+    --primary: #2c5e3b;
+    --primary-dark: #1e3f27;
+    --accent: #d97706;
+    --accent-hover: #b45309;
+    --bg-color: #f4f1ea;
+    --card-bg: #ffffff;
+    --text-color: #2b2b2b;
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: var(--primary-dark);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  header p {
+    margin: 5px 0 0;
+    font-style: italic;
+    color: #666;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .team-card {
+    background-color: var(--card-bg);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-top: 6px solid var(--primary);
+    position: relative;
+  }
+
+  .team-card.team2 {
+    border-top-color: var(--accent);
+  }
+
+  .team-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    border: none;
+    background: transparent;
+    text-align: center;
+    width: 100%;
+    font-family: inherit;
+    color: var(--primary-dark);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 5px;
+  }
+
+  .team-name:focus {
+    background: #eee;
+    outline: none;
+  }
+
+  .wins-badge {
+    font-size: 0.9rem;
+    background: #eee;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .wins-adj {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: #ddd;
+    color: #333;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    margin: 0 4px;
+  }
+
+  .wins-adj:active {
+    background: #ccc;
+  }
+
+  .score-display {
+    font-size: 5rem;
+    font-weight: 900;
+    margin: 10px 0;
+    color: #111;
+  }
+
+  .track {
+    width: 100%;
+    height: 12px;
+    background: #e5e5e5;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 15px 0;
+    position: relative;
+  }
+
+  .track-fill {
+    height: 100%;
+    background: var(--primary);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .team2 .track-fill {
+    background: var(--accent);
+  }
+
+  .team-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .team-buttons button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    color: white;
+  }
+
+  .btn-plus {
+    background-color: #2e7d32;
+  }
+
+  .team2 .btn-plus {
+    background-color: #d97706;
+  }
+
+  .btn-minus {
+    background-color: #d32f2f;
+  }
+
+  .team-buttons button:active {
+    transform: scale(0.95);
+  }
+
+  .controls-panel {
+    background: var(--card-bg);
+    padding: 15px 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+
+  .action-btns {
+    display: flex;
+    gap: 10px;
+  }
+
+  .action-btn {
+    background: #eee;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  .action-btn:hover {
+    background: #ddd;
+  }
+
+  #victory-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: popIn 0.3s ease;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-content h2 {
+    margin-top: 0;
+    color: var(--primary-dark);
+  }
+
+  .modal-content button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+
+  .coin-panel {
+    background: var(--card-bg);
+    padding: 10px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 900px;
+    box-sizing: border-box;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Boulodrome de Provence</h1>
+  <p>Compteur officiel • Objectif 13 points</p>
+</header>
+
+<div class="container">
+  <div class="team-card">
+    <input type="text" class="team-name" id="name1" value="Équipe 1" title="Cliquez pour renommer">
+    <div class="wins-badge">
+      <button class="wins-adj" onclick="adjustWins(1, -1)" aria-label="Retirer une partie gagnée">−</button>
+      Parties gagnées : <span id="wins1">0</span>
+      <button class="wins-adj" onclick="adjustWins(1, 1)" aria-label="Ajouter une partie gagnée">+</button>
+    </div>
+    <div class="score-display" id="score1">0</div>
+    <div class="track">
+      <div class="track-fill" id="track1"></div>
+    </div>
+    <div class="team-buttons">
+      <button class="btn-minus" onclick="updateScore(1, -1)">−1</button>
+      <button class="btn-plus" onclick="updateScore(1, 1)">+1</button>
+    </div>
+  </div>
+
+  <div class="team-card team2">
+    <input type="text" class="team-name" id="name2" value="Équipe 2" title="Cliquez pour renommer">
+    <div class="wins-badge">
+      <button class="wins-adj" onclick="adjustWins(2, -1)" aria-label="Retirer une partie gagnée">−</button>
+      Parties gagnées : <span id="wins2">0</span>
+      <button class="wins-adj" onclick="adjustWins(2, 1)" aria-label="Ajouter une partie gagnée">+</button>
+    </div>
+    <div class="score-display" id="score2">0</div>
+    <div class="track">
+      <div class="track-fill" id="track2"></div>
+    </div>
+    <div class="team-buttons">
+      <button class="btn-minus" onclick="updateScore(2, -1)">−1</button>
+      <button class="btn-plus" onclick="updateScore(2, 1)">+1</button>
+    </div>
+  </div>
+</div>
+
+<div class="controls-panel">
+  <div class="action-btns">
+    <button class="action-btn" onclick="resetCurrentMatch()">Nouvelle Mène / Reset</button>
+    <button class="action-btn" onclick="resetAllStats()" style="color: #d32f2f;">Remise à zéro stats</button>
+  </div>
+</div>
+
+<div class="coin-panel">
+  <span>🪙 <strong>Arbitre :</strong> Qui commence le cochonnet ?</span>
+  <button class="action-btn" onclick="coinToss()" style="background: var(--accent); color: white;">Pile ou Face</button>
+</div>
+
+<div id="victory-modal">
+  <div class="modal-content">
+    <h2 id="victory-title">Victoire !</h2>
+    <p id="victory-text">L'équipe a remporté la partie de pétanque.</p>
+    <button onclick="closeModal()">Lancer une nouvelle partie</button>
+  </div>
+</div>
+
+<script>
+  let scores = [0, 0];
+  let wins = [0, 0];
+  const STORAGE_KEY = 'boulodrome-state';
+
+  function updateScore(team, sign) {
+    let index = team - 1;
+    scores[index] += sign;
+
+    if (scores[index] < 0) scores[index] = 0;
+    if (scores[index] > 13) scores[index] = 13;
+
+    render();
+
+    if (scores[index] === 13) {
+      triggerVictory(team);
+    }
+  }
+
+  function render() {
+    document.getElementById('score1').textContent = scores[0];
+    document.getElementById('score2').textContent = scores[1];
+    document.getElementById('wins1').textContent = wins[0];
+    document.getElementById('wins2').textContent = wins[1];
+
+    document.getElementById('track1').style.width = (scores[0] / 13 * 100) + '%';
+    document.getElementById('track2').style.width = (scores[1] / 13 * 100) + '%';
+
+    saveState();
+  }
+
+  function adjustWins(team, delta) {
+    let i = team - 1;
+    wins[i] = Math.max(0, wins[i] + delta);
+    render();
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        scores,
+        wins,
+        names: [document.getElementById('name1').value, document.getElementById('name2').value]
+      }));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (!saved) return;
+      if (Array.isArray(saved.scores)) scores = saved.scores.map(n => Math.min(12, Math.max(0, +n || 0)));
+      if (Array.isArray(saved.wins)) wins = saved.wins.map(n => Math.max(0, +n || 0));
+      if (Array.isArray(saved.names)) {
+        if (saved.names[0]) document.getElementById('name1').value = saved.names[0];
+        if (saved.names[1]) document.getElementById('name2').value = saved.names[1];
+      }
+    } catch (e) {}
+  }
+
+  function resetCurrentMatch() {
+    scores = [0, 0];
+    render();
+  }
+
+  function resetAllStats() {
+    if (confirm("Voulez-vous vraiment remettre les scores et les compteurs de parties à zéro ?")) {
+      scores = [0, 0];
+      wins = [0, 0];
+      render();
+    }
+  }
+
+  function triggerVictory(team) {
+    let index = team - 1;
+    let otherIndex = team === 1 ? 1 : 0;
+    wins[index]++;
+
+    let name = document.getElementById('name' + team).value;
+    let otherScore = scores[otherIndex];
+
+    let msg = `🎉 L'équipe <strong>${name}</strong> remporte la partie 13 à ${otherScore} !`;
+    if (otherScore === 0) {
+      msg += " 🤭 <strong>Aïe... C'est la Fanny !</strong> (13 à 0)";
+    }
+
+    document.getElementById('victory-title').textContent = `${name} Gagnant !`;
+    document.getElementById('victory-text').innerHTML = msg;
+    document.getElementById('victory-modal').style.display = 'flex';
+    render();
+  }
+
+  function closeModal() {
+    document.getElementById('victory-modal').style.display = 'none';
+    scores = [0, 0];
+    render();
+  }
+
+  function coinToss() {
+    let name1 = document.getElementById('name1').value;
+    let name2 = document.getElementById('name2').value;
+    let winner = Math.random() < 0.5 ? name1 : name2;
+    alert(`🪙 Résultat du Pile ou Face :\n\nC'est l'équipe « ${winner} » qui commence !`);
+  }
+
+  document.getElementById('name1').addEventListener('input', saveState);
+  document.getElementById('name2').addEventListener('input', saveState);
+  loadState();
+  render();
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+
+</body>
+</html>
