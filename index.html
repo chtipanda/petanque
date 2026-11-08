@@ -195,6 +195,7 @@
     transform: scale(0.95);
   }
 
+  /* Contrôles globaux / Pas */
   .controls-panel {
     background: var(--card-bg);
     padding: 15px 25px;
@@ -231,6 +232,7 @@
     background: #ddd;
   }
 
+  /* Modal / Alerte Victoire */
   #victory-modal {
     display: none;
     position: fixed;
@@ -274,6 +276,7 @@
     margin-top: 15px;
   }
 
+  /* Pile ou face coin toss */
   .coin-panel {
     background: var(--card-bg);
     padding: 10px 20px;
@@ -292,11 +295,12 @@
 <body>
 
 <header>
-  <h1>Boulodrome de Provence</h1>
+  <h1>Boulodrome des amis</h1>
   <p>Compteur officiel • Objectif 13 points</p>
 </header>
 
 <div class="container">
+  <!-- Équipe 1 -->
   <div class="team-card">
     <input type="text" class="team-name" id="name1" value="Équipe 1" title="Cliquez pour renommer">
     <div class="wins-badge">
@@ -314,6 +318,7 @@
     </div>
   </div>
 
+  <!-- Équipe 2 -->
   <div class="team-card team2">
     <input type="text" class="team-name" id="name2" value="Équipe 2" title="Cliquez pour renommer">
     <div class="wins-badge">
@@ -332,18 +337,22 @@
   </div>
 </div>
 
+<!-- Barre de contrôle des pas et actions -->
 <div class="controls-panel">
+
   <div class="action-btns">
     <button class="action-btn" onclick="resetCurrentMatch()">Nouvelle Mène / Reset</button>
     <button class="action-btn" onclick="resetAllStats()" style="color: #d32f2f;">Remise à zéro stats</button>
   </div>
 </div>
 
+<!-- Outil Pile ou Face -->
 <div class="coin-panel">
   <span>🪙 <strong>Arbitre :</strong> Qui commence le cochonnet ?</span>
   <button class="action-btn" onclick="coinToss()" style="background: var(--accent); color: white;">Pile ou Face</button>
 </div>
 
+<!-- Modal Victoire -->
 <div id="victory-modal">
   <div class="modal-content">
     <h2 id="victory-title">Victoire !</h2>
@@ -377,6 +386,7 @@
     document.getElementById('wins1').textContent = wins[0];
     document.getElementById('wins2').textContent = wins[1];
 
+    // Piste du boulodrome (max 13 points)
     document.getElementById('track1').style.width = (scores[0] / 13 * 100) + '%';
     document.getElementById('track2').style.width = (scores[1] / 13 * 100) + '%';
 
@@ -457,11 +467,13 @@
     alert(`🪙 Résultat du Pile ou Face :\n\nC'est l'équipe « ${winner} » qui commence !`);
   }
 
+  // Sauvegarde automatique des noms d'équipes, scores et parties gagnées
   document.getElementById('name1').addEventListener('input', saveState);
   document.getElementById('name2').addEventListener('input', saveState);
   loadState();
   render();
 
+  // PWA : fonctionnement hors ligne
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
